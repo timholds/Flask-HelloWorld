@@ -4,10 +4,10 @@ from flask_restful import reqparse, abort, Api, Resource
 app = Flask(__name__)
 api = Api(app)
 
-TODOS = {
-    'todo1': {'task': 'build an API'},
-    'todo2': {'task': '?????'},
-    'todo3': {'task': 'profit!'},
+COLLEGES = {
+    'todo1': {'College': 'UCLA'},
+    'todo2': {'task': 'USD'},
+    'todo3': {'task': 'USC'},
 }
 
 
