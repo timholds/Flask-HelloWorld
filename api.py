@@ -1,35 +1,21 @@
 from flask import Flask
 from flask_restful import reqparse, abort, Api, Resource
-import requests
 
 app = Flask(__name__)
 api = Api(app)
 
-resp = requests.get('https://localhost.com/colleges/')
-if resp.status_code != 200:
-    # This means something went wrong.
-    raise ApiError('GET /tasks/ {}'.format(resp.status_code))
-for todo_item in resp.json():
-    print('{} {}'.format(college_item['college_id'], college_item['summary']))
-
-
 COLLEGES = {
-    'college1': {'College': 'UCI'},
-    'college2': {'College': 'UCSD'},
-    'college3': {'College': 'UCSC'},
+    'school1': {'school_name': 'UCLA'},
+    'school2': {'school_name': 'UCI'},
+    'school3': {'school_name': 'UCR'},
 }
-
 
 def abort_if_college_doesnt_exist(college_id):
     if college_id not in COLLEGES:
         abort(404, message="college {} doesn't exist".format(college_id))
 
 parser = reqparse.RequestParser()
-parser.add_argument('school')
-
-class CreateUser(Resource):
-    def post(self):
-        return {'status': 'success'}
+parser.add_argument('school_name')
 
 # College shows a single college item and lets you delete a college item
 class College(Resource):
@@ -44,33 +30,31 @@ class College(Resource):
 
     def put(self, college_id):
         args = parser.parse_args()
-        task = {'task': args['task']}
-        COLLEGES[college_id] = task
-        return task, 201
+        print(args)
+        school_name = {'school_name': args['school_name']}
+        COLLEGES[college_id] = school_name
+        return school_name, 201
 
-class HelloWorld(Resource):
-    def get(self):
-        return 'Hello World. This is the home page '
 
-# collegeList shows a list of all colleges, and lets you POST to add new colleges
+# TodoList
+# shows a list of all COLLEGES, and lets you POST to add new school_names
 class CollegeList(Resource):
     def get(self):
+        # Returns JSON object of Colleges, including school_name and the value
         return COLLEGES
 
     def post(self):
         args = parser.parse_args()
-        college_id = int(max(COLLEGES.keys()).lstrip('college')) + 1
-        college_id = 'college%i' % college_id
-        COLLEGES[college_id] = {'task': args['task']}
+        college_id = int(max(COLLEGES.keys()).lstrip('school')) + 1
+        college_id = 'school%i' % college_id
+        COLLEGES[college_id] = {'school_name': args['school_name']}
         return COLLEGES[college_id], 201
 
 ##
 ## Actually setup the Api resource routing here
 ##
-api.add_resource(HelloWorld, '/')
 api.add_resource(CollegeList, '/colleges')
 api.add_resource(College, '/colleges/<college_id>')
-api.add_resource(CreateUser, '/CreateUser')
 
 
 if __name__ == '__main__':
