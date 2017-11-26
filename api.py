@@ -1,65 +1,76 @@
 from flask import Flask
 from flask_restful import reqparse, abort, Api, Resource
+import requests
 
 app = Flask(__name__)
 api = Api(app)
 
+resp = requests.get('https://localhost.com/colleges/')
+if resp.status_code != 200:
+    # This means something went wrong.
+    raise ApiError('GET /tasks/ {}'.format(resp.status_code))
+for todo_item in resp.json():
+    print('{} {}'.format(college_item['college_id'], college_item['summary']))
+
+
 COLLEGES = {
-    'todo1': {'College': 'UCLA'},
-    'todo2': {'task': 'USD'},
-    'todo3': {'task': 'USC'},
+    'college1': {'College': 'UCI'},
+    'college2': {'College': 'UCSD'},
+    'college3': {'College': 'UCSC'},
 }
 
 
-def abort_if_todo_doesnt_exist(todo_id):
-    if todo_id not in TODOS:
-        abort(404, message="Todo {} doesn't exist".format(todo_id))
+def abort_if_college_doesnt_exist(college_id):
+    if college_id not in COLLEGES:
+        abort(404, message="college {} doesn't exist".format(college_id))
 
 parser = reqparse.RequestParser()
-parser.add_argument('task')
+parser.add_argument('school')
 
+class CreateUser(Resource):
+    def post(self):
+        return {'status': 'success'}
 
-# Todo
-# shows a single todo item and lets you delete a todo item
-class Todo(Resource):
-    def get(self, todo_id):
-        abort_if_todo_doesnt_exist(todo_id)
-        return TODOS[todo_id]
+# College shows a single college item and lets you delete a college item
+class College(Resource):
+    def get(self, college_id):
+        abort_if_college_doesnt_exist(college_id)
+        return COLLEGES[college_id]
 
-    def delete(self, todo_id):
-        abort_if_todo_doesnt_exist(todo_id)
-        del TODOS[todo_id]
+    def delete(self, college_id):
+        abort_if_college_doesnt_exist(college_id)
+        del COLLEGES[college_id]
         return '', 204
 
-    def put(self, todo_id):
+    def put(self, college_id):
         args = parser.parse_args()
         task = {'task': args['task']}
-        TODOS[todo_id] = task
+        COLLEGES[college_id] = task
         return task, 201
 
 class HelloWorld(Resource):
     def get(self):
-        return 'Hello World '
+        return 'Hello World. This is the home page '
 
-# TodoList
-# shows a list of all todos, and lets you POST to add new tasks
-class TodoList(Resource):
+# collegeList shows a list of all colleges, and lets you POST to add new colleges
+class CollegeList(Resource):
     def get(self):
-        return TODOS
+        return COLLEGES
 
     def post(self):
         args = parser.parse_args()
-        todo_id = int(max(TODOS.keys()).lstrip('todo')) + 1
-        todo_id = 'todo%i' % todo_id
-        TODOS[todo_id] = {'task': args['task']}
-        return TODOS[todo_id], 201
+        college_id = int(max(COLLEGES.keys()).lstrip('college')) + 1
+        college_id = 'college%i' % college_id
+        COLLEGES[college_id] = {'task': args['task']}
+        return COLLEGES[college_id], 201
 
 ##
 ## Actually setup the Api resource routing here
 ##
 api.add_resource(HelloWorld, '/')
-api.add_resource(TodoList, '/todos')
-api.add_resource(Todo, '/todos/<todo_id>')
+api.add_resource(CollegeList, '/colleges')
+api.add_resource(College, '/colleges/<college_id>')
+api.add_resource(CreateUser, '/CreateUser')
 
 
 if __name__ == '__main__':
